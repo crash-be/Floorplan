@@ -1,15 +1,17 @@
-const API_KEY = process.env.GROK_API_KEY?.trim();
+const API_KEY = import.meta.env.VITE_XAI_API_KEY || import.meta.env.VITE_GROK_API_KEY;
 
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
     if (!API_KEY) {
-        throw new Error("Grok (xAI) API Key not found");
+        throw new Error("Grok (xAI) API Key not found. Please set VITE_XAI_API_KEY in .env");
     }
 
     // Using Vite proxy /api/xai -> https://api.x.ai
-    const response = await fetch("/api/xai", {
+    // Endpoint: /v1/chat/completions
+    const response = await fetch("/api/xai/v1/chat/completions", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json"
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${API_KEY}`
         },
 
         body: JSON.stringify({
