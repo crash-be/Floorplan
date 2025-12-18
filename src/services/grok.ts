@@ -1,4 +1,4 @@
-const API_KEY = import.meta.env.VITE_XAI_API_KEY?.trim();
+const API_KEY = process.env.GROK_API_KEY?.trim();
 
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
     if (!API_KEY) {
@@ -6,12 +6,12 @@ export async function analyzeWithGrok(base64Image: string): Promise<string> {
     }
 
     // Using Vite proxy /api/xai -> https://api.x.ai
-    const response = await fetch("/api/xai/v1/chat/completions", {
+    const response = await fetch("/api/xai", {
         method: "POST",
         headers: {
-            "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`
+            "Content-Type": "application/json"
         },
+
         body: JSON.stringify({
             model: "grok-2-vision-1212", // Latest stable vision model
             messages: [
@@ -115,8 +115,8 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
 
     if (!response.ok) {
         const errorText = await response.text();
-        console.error("Grok API Error:", errorText);
-        throw new Error(`Grok API Error: ${response.status} ${response.statusText} - ${errorText}`);
+        console.error("Serverless Function Error:", errorText);
+        throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${errorText}`);
     }
 
     const data = await response.json();
