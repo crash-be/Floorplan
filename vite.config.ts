@@ -1,9 +1,12 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
+import { defineConfig } from 'vite';
+import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-  base: './',
+
+  // Gebruik '/' op Vercel zodat alle assets correct geladen worden
+  base: '/',
+
   server: {
     host: true,
     proxy: {
