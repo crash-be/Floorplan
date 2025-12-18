@@ -5,7 +5,7 @@ export default defineConfig({
   plugins: [react()],
 
   // Gebruik '/' op Vercel zodat alle assets correct geladen worden
-  base: '/',
+  base: "/floorplanapp/",
 
   server: {
     host: true,
