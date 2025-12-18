@@ -1,14 +1,9 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-// ✔ WordPress hosting fix
-// Gebruik altijd dezelfde absolute URL als waar de build terechtkomt
-// Bij jou: /wp-content/uploads/floorplan/dist/
-export default defineConfig(({ mode }) => ({
+export default defineConfig({
   plugins: [react()],
-
-  base: './', // relative paths
-
+  base: './',
   server: {
     host: true,
     proxy: {
@@ -19,4 +14,4 @@ export default defineConfig(({ mode }) => ({
       },
     },
   },
-}));
+});
