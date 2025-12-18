@@ -4,8 +4,8 @@ import react from '@vitejs/plugin-react';
 export default defineConfig({
   plugins: [react()],
 
-  // Gebruik '/' op Vercel zodat alle assets correct geladen worden
-  base: "/floorplanapp/",
+  // Root deployment
+  base: "/",
 
   server: {
     host: true,
