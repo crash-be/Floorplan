@@ -5,9 +5,8 @@ export async function analyzeWithGrok(base64Image: string): Promise<string> {
         throw new Error("Grok (xAI) API Key not found. Please set VITE_XAI_API_KEY in .env");
     }
 
-    // Using Vite proxy /api/xai -> https://api.x.ai
-    // Endpoint: /v1/chat/completions
-    const response = await fetch("/api/xai/v1/chat/completions", {
+    // Using Vite proxy /api/xai -> https://api.x.ai/v1/chat/completions (via proxy rewrite or Vercel function)
+    const response = await fetch("/api/xai", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",

@@ -16,7 +16,7 @@ export default defineConfig({
       '/api/xai': {
         target: 'https://api.x.ai',
         changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/xai/, ''),
+        rewrite: (path) => path.replace(/^\/api\/xai/, '/v1/chat/completions'),
       },
     },
   },

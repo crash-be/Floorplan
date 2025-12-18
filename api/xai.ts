@@ -1,12 +1,22 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node';
 
+const API_KEY = process.env.VITE_XAI_API_KEY || process.env.GROK_API_KEY || process.env.VITE_GROK_API_KEY;
+
 export default async function handler(req: VercelRequest, res: VercelResponse) {
+  if (req.method !== 'POST') {
+    return res.status(405).json({ error: 'Method not allowed' });
+  }
+
   try {
-    const response = await fetch('https://api.x.ai/endpoint', { // vul jouw endpoint in
-      method: 'POST', // of GET afhankelijk van de API
+    if (!API_KEY) {
+      throw new Error("Server Misconfiguration: API Key not found");
+    }
+
+    const response = await fetch('https://api.x.ai/v1/chat/completions', {
+      method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': `Bearer ${process.env.GROK_API_KEY}` // zet je API key in Vercel Environment Variables
+        'Authorization': `Bearer ${API_KEY}`
       },
       body: JSON.stringify(req.body)
     });
