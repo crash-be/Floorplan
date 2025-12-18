@@ -6,6 +6,9 @@ export default defineConfig({
 
   // Root deployment
   base: "/",
+  build: {
+    outDir: "dist"
+  }
 
   server: {
     host: true,
