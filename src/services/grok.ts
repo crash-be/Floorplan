@@ -8,7 +8,7 @@ export async function analyzeWithGrok(base64Image: string): Promise<string> {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            model: "grok-2-vision-1212", // Laatste stabiele vision model
+            model: "grok-4", // Laatste stabiele vision model
             messages: [
                 {
                     role: "user",

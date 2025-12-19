@@ -13,8 +13,13 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     console.log('Request body size:', JSON.stringify(req.body).length, 'bytes');
 
+    const bodyWithModel = {
+      ...req.body,
+      model: req.body.model || 'grok-4', // fallback naar 'grok-4' als geen model meegestuurd
+};
+
     // ✅ Gebruik juiste endpoint voor vision requests
-    const upstream = await fetch('https://api.x.ai/v1/images/analyze', {
+    const upstream = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
