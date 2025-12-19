@@ -1,21 +1,19 @@
-// grok.ts
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
-    // Frontend hoeft geen API key te kennen
-    // De key wordt gebruikt in de serverless function /api/xai
-    const response = await fetch("/api/xai", {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-            model: "grok-4", // Laatste stabiele vision model
-            messages: [
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "text",
-                            text: `SYSTEM PROMPT — Advanced Geometric Area Analysis (Chain-of-Thought)
+  // Frontend hoeft geen API key te kennen
+  const response = await fetch("/api/xai", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "grok-2-vision-1212", // vision model
+      messages: [
+        {
+          role: "user",
+          content: [
+            {
+              type: "text",
+              text: `SYSTEM PROMPT — Advanced Geometric Area Analysis (Chain-of-Thought)
 You are an expert in Computational Geometry and Topology.
 Your goal is to parse an image of a floor plan, reconstruct its geometry, and calculate the EXACT area.
 
@@ -94,26 +92,24 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
   "roomCount": 1,
   "summary": "Start DIREKT met de uitleg in het NEDERLANDS. Stap 1: Gevonden maten... Stap 2: Strategie... Stap 3: Berekening..."
 }`
-                        },
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: base64Image
-                            }
-                        }
-                    ]
-                }
-            ],
-            stream: false
-        })
-    });
+            },
+            {
+              type: "image_url",
+              image_url: { url: base64Image }
+            }
+          ]
+        }
+      ],
+      stream: false
+    })
+  });
 
-    if (!response.ok) {
-        const errorText = await response.text();
-        console.error("Serverless Function Error:", errorText);
-        throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${errorText}`);
-    }
+  if (!response.ok) {
+    const text = await response.text();
+    console.error("Serverless Function Error:", text);
+    throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${text}`);
+  }
 
-    const data = await response.json();
-    return data.choices[0].message.content;
+  const data = await response.json();
+  return data.choices[0].message.content;
 }
