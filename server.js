@@ -1,7 +1,7 @@
+// server.js
 import express from 'express';
 import path from 'path';
 import { fileURLToPath } from 'url';
-// Geen node-fetch nodig als je op Node 18+ zit, we gebruiken de globale fetch
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -9,16 +9,17 @@ const __dirname = path.dirname(__filename);
 const app = express();
 const PORT = process.env.PORT || 10000;
 
-// 1. Limieten omhoog
+// Middleware voor grote afbeeldingen
 app.use(express.json({ limit: '10mb' }));
 
-// 2. DE API ROUTE (Moet boven de static files!)
+// --- DE API ROUTE MOET HIER ---
 app.post('/api/xai', async (req, res) => {
   try {
-    const apiKey = process.env.VITE_XAI_API_KEY || process.env.XAI_API_KEY;
+    const apiKey = process.env.XAI_API_KEY || process.env.VITE_XAI_API_KEY;
     
     if (!apiKey) {
-      return res.status(500).json({ error: "Geen API key gevonden op server" });
+      console.error("Configuratie fout: Geen API key gevonden.");
+      return res.status(500).json({ error: "Server configuratie fout (API key)" });
     }
 
     const response = await fetch('https://api.x.ai/v1/chat/completions', {
@@ -27,23 +28,27 @@ app.post('/api/xai', async (req, res) => {
         'Content-Type': 'application/json',
         'Authorization': `Bearer ${apiKey}`,
       },
-      body: JSON.stringify(req.body) // Geef de body door die de frontend stuurt
+      body: JSON.stringify(req.body),
     });
 
-    const data = await response.json();
-    res.status(response.status).json(data);
+    const text = await response.text();
+    
+    if (!response.ok) {
+      return res.status(response.status).send(text);
+    }
+
+    res.send(text);
   } catch (error) {
-    console.error("Server proxy error:", error);
+    console.error("Proxy error:", error);
     res.status(500).json({ error: "Interne server fout" });
   }
 });
 
-// 3. Statische bestanden serveren
+// --- PAS DAARNA STATISCHE BESTANDEN ---
 app.use(express.static(path.join(__dirname, "dist")));
 
-// 4. SPA Catch-all
 app.get("*", (req, res) => {
   res.sendFile(path.join(__dirname, "dist", "index.html"));
 });
 
-app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
+app.listen(PORT, () => console.log(`Server live op poort ${PORT}`));
