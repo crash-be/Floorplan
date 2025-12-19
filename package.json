@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "lint": "eslint ."
   },
+  "engines": {
+    "node": "18.x"
+  },
   "dependencies": {
     "@google/generative-ai": "^0.24.1",
     "@tailwindcss/postcss": "^4.1.18",
