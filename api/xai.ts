@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('Request body size:', JSON.stringify(req.body).length, 'bytes');
 
     // ✅ Gebruik correcte Grok endpoint
-    const upstream = await fetch('https://api.grok.com/v1/chat/completions', {
+    const upstream = await fetch('https://api.x.ai/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
