@@ -11,10 +11,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(400).json({ error: 'Missing API key' });
     }
 
-    // Optioneel: log request size voor debugging grote payloads
     console.log('Request body size:', JSON.stringify(req.body).length, 'bytes');
 
-    const upstream = await fetch('https://api.x.ai/v1/chat/completions', {
+    // ✅ Gebruik juiste endpoint voor vision requests
+    const upstream = await fetch('https://api.x.ai/v1/vision/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -23,7 +23,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify(req.body),
     });
 
-    // Check of de upstream response OK is
     if (!upstream.ok) {
       const text = await upstream.text();
       console.error('Upstream API Error:', text);
