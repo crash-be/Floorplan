@@ -14,7 +14,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     console.log('Request body size:', JSON.stringify(req.body).length, 'bytes');
 
     // ✅ Gebruik juiste endpoint voor vision requests
-    const upstream = await fetch('https://api.x.ai/v1/vision/completions', {
+    const upstream = await fetch('https://api.x.ai/v1/images/analyze', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
