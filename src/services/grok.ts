@@ -3,9 +3,7 @@ export async function analyzeWithGrok(base64Image: string): Promise<string> {
     // We sturen de request naar onze eigen server op Render
     const response = await fetch("/api/xai", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: "grok-2-vision-1212",
         temperature: 0,
@@ -96,10 +94,7 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
 }`
               },
               {
-                type: "image_url",
-                image_url: {
-                  url: base64Image,
-                  detail: "high" // Belangrijk voor scherpe OCR op plattegronden
+                type: "image_url", image_url: { url: base64Image, detail: "high"
                 }
               }
             ]
@@ -109,22 +104,22 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
       })
     });
 
+const text = await response.text();
+
     if (!response.ok) {
-      const errorData = await response.json();
-      throw new Error(errorData.error || `Server fout: ${response.status}`);
+      throw new Error(`Server fout (${response.status}): ${text || 'Geen details'}`);
     }
 
-    const data = await response.json();
-    
-    // De xAI API stuurt de content terug in choices[0].message.content
-    const content = data.choices[0].message.content;
+    if (!text) {
+      throw new Error("De server gaf een volledig leeg antwoord terug.");
+    }
 
-    // Soms zet de AI JSON in markdown blokken (```json ... ```). Even opschonen:
-    return content.replace(/```json|```/g, "").trim();
+    // Nu pas parsen
+    const data = JSON.parse(text);
+    return data.choices[0].message.content;
 
-  } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Onbekende fout";
-    console.error("Analyse mislukt:", message);
-    throw new Error(message);
+  } catch (err: any) {
+    console.error("analyzeWithGrok error:", err);
+    throw err;
   }
 }
