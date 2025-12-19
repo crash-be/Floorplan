@@ -3,21 +3,16 @@ import react from '@vitejs/plugin-react';
 
 export default defineConfig({
   plugins: [react()],
-
-  // Root deployment
   base: "/",
   build: {
     outDir: "dist"
   },
-
   server: {
     host: true,
     proxy: {
-      '/api/xai': {
-        target: 'https://api.x.ai',
-        changeOrigin: true,
-        rewrite: (path) => path.replace(/^\/api\/xai/, '/v1/chat/completions'),
-      },
+      // Dit zorgt ervoor dat je lokaal (npm run dev) 
+      // verbinding maakt met je server.js op poort 10000
+      '/api': 'http://localhost:10000',
     },
   },
 });
