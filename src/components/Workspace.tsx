@@ -81,42 +81,45 @@ export const Workspace: React.FC<WorkspaceProps> = ({ image }) => {
     };
 
     // --- VERBETERDE ANALYSE LOGICA ---
-    const startAnalysis = async () => {
-        if (!image) return;
-        setIsAnalyzing(true);
-        setAnalysisResult(null);
+const startAnalysis = async () => {
+    if (!image) return;
+    setIsAnalyzing(true);
+    setAnalysisResult(null);
+
+    try {
+        const rawResponse = await analyzeWithGrok(image);
+        
+        // Check of er überhaupt een response is
+        if (!rawResponse || rawResponse.trim().length === 0) {
+            throw new Error("De server stuurde een leeg antwoord terug. Controleer de Render logs.");
+        }
+
+        const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
+        
+        if (!jsonMatch) {
+            // Fallback: toon de tekst als het geen JSON is
+            setAnalysisResult({
+                summary: rawResponse,
+                estimatedArea: "Onbekend",
+                measurements: []
+            });
+            return;
+        }
 
         try {
-            const rawResponse = await analyzeWithGrok(image);
-
-            // 1. Zoek naar JSON patroon in de tekst (voor het geval de AI extra tekst stuurt)
-            const jsonMatch = rawResponse.match(/\{[\s\S]*\}/);
-
-            if (!jsonMatch) {
-                throw new Error("Geen geldige data ontvangen van de AI.");
-            }
-
-            // 2. Probeer de gevonden JSON te parsen
-            try {
-                const parsed = JSON.parse(jsonMatch[0]);
-                setAnalysisResult(parsed);
-            } catch (e) {
-                console.error("Parse error:", e);
-                // Fallback: Als parse faalt, probeer handmatig de area te vinden
-                const areaMatch = rawResponse.match(/(\d+[.,]\d+)\s*m²/);
-                setAnalysisResult({
-                    summary: rawResponse,
-                    estimatedArea: areaMatch ? `${areaMatch[1]} m²` : "Zie uitleg",
-                    measurements: []
-                });
-            }
-        } catch (e: any) {
-            console.error(e);
-            alert(`Analyse mislukt: ${e.message}`);
-        } finally {
-            setIsAnalyzing(false);
+            const parsed = JSON.parse(jsonMatch[0]);
+            setAnalysisResult(parsed);
+        } catch (e) {
+            console.error("Parse error:", e);
+            throw new Error("De AI stuurde ongeldige JSON data.");
         }
-    };
+    } catch (e: any) {
+        console.error("Analyse error:", e);
+        alert(`Fout: ${e.message}`);
+    } finally {
+        setIsAnalyzing(false);
+    }
+};
 
     return (
         <div ref={targetRef} className="w-full h-full relative overflow-hidden bg-slate-900/50 touch-none">
