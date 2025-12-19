@@ -1,7 +1,7 @@
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
   try {
     // We sturen de request naar onze eigen server op Render
-    const response = await fetch("/api/xai", {
+    const response = await fetch("/xai", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
