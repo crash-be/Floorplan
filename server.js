@@ -19,7 +19,7 @@ app.post('/api/xai', async (req, res) => {
   console.log('--- Nieuwe analyse aanvraag ontvangen ---');
   
   try {
-    const apiKey = process.env.VITE_XAI_API_KEY; 
+    const apiKey = process.env.VITE_XAI_API_KEY || process.env.XAI_API_KEY; 
     
     if (!apiKey) {
       console.error('FOUT: VITE_XAI_API_KEY ontbreekt in environment variables.');
