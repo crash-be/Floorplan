@@ -4,14 +4,12 @@ import { Workspace } from './components/Workspace';
 import { Layout, Calculator, Settings } from 'lucide-react';
 
 function App() {
+  // De state accepteert nu een string (base64) of null
   const [image, setImage] = useState<string | null>(null);
 
-  const handleImageSelected = (file: File) => {
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      setImage(e.target?.result as string);
-    };
-    reader.readAsDataURL(file);
+  // Aangepast: ontvangt direct de string van de geoptimaliseerde UploadZone
+  const handleImageSelected = (base64Data: string) => {
+    setImage(base64Data);
   };
 
   return (
@@ -37,27 +35,28 @@ function App() {
       </header>
 
       <main className="flex-1 pt-24 px-6 mb-6 flex flex-col h-screen">
-        {!image ? (
+        {image === null ? (
           <div className="flex-1 flex flex-col items-center justify-center max-w-2xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-700">
             <div className="text-center mb-12">
               <h1 className="text-5xl font-extralight mb-4 bg-gradient-to-br from-white to-slate-500 bg-clip-text text-transparent pb-2">
                 Offerte generator
               </h1>
               <p className="text-slate-500 text-lg">
-                Upload uw plan hier.
+                Upload uw plan hier of start met tekenen.
               </p>
             </div>
+
+            {/* onImageSelected krijgt nu de base64 string door */}
             <UploadZone onImageSelected={handleImageSelected} />
 
             <div className="mt-8 flex justify-center">
               <button
-                onClick={() => setImage("")} // Empty string signals blank workspace logic (or we can change state type)
+                onClick={() => setImage("")} // Lege string triggert de Workspace zonder achtergrond
                 className="px-6 py-3 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 flex items-center gap-2"
               >
-                <span>✏️ Teken uw plan hier. </span>
+                <span>✏️ Teken uw plan hier.</span>
               </button>
             </div>
-
           </div>
         ) : (
           <div className="flex-1 bg-slate-900/30 border border-slate-800/50 rounded-3xl overflow-hidden relative">
@@ -67,7 +66,7 @@ function App() {
               onClick={() => setImage(null)}
               className="absolute top-4 right-4 bg-slate-800 hover:bg-slate-700 text-white px-4 py-2 rounded-lg text-sm transition-colors z-30 shadow-lg border border-slate-700"
             >
-              Reset
+              Reset / Nieuw plan
             </button>
           </div>
         )}
