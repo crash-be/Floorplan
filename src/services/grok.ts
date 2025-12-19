@@ -1,13 +1,14 @@
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
   try {
-    // Frontend hoeft geen API key te kennen
+    // We sturen de request naar onze eigen server op Render
     const response = await fetch("/api/xai", {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
       },
       body: JSON.stringify({
-        model: "grok-2-vision-1212", // vision model
+        model: "grok-2-vision-1212",
+        temperature: 0,
         messages: [
           {
             role: "user",
@@ -96,7 +97,10 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
               },
               {
                 type: "image_url",
-                image_url: { url: base64Image }
+                image_url: {
+                  url: base64Image,
+                  detail: "high" // Belangrijk voor scherpe OCR op plattegronden
+                }
               }
             ]
           }
@@ -105,37 +109,22 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
       })
     });
 
-    const text = await response.text();
-
     if (!response.ok) {
-      console.error("Serverless Function Error:", text);
-      throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${text}`);
+      const errorData = await response.json();
+      throw new Error(errorData.error || `Server fout: ${response.status}`);
     }
 
-    if (!text) {
-      console.warn("Empty response from API");
-      throw new Error("Empty response from API");
-    }
+    const data = await response.json();
+    
+    // De xAI API stuurt de content terug in choices[0].message.content
+    const content = data.choices[0].message.content;
 
-    let data;
-    try {
-      data = JSON.parse(text);
-    } catch (err) {
-      console.error("Failed to parse JSON from API:", text);
-      throw new Error("Invalid JSON received from API");
-    }
-
-    // Controleer dat de structuur aanwezig is
-    if (!data.choices || !data.choices[0]?.message?.content) {
-      console.error("Unexpected API response structure:", data);
-      throw new Error("Unexpected API response structure");
-    }
-
-    return data.choices[0].message.content;
+    // Soms zet de AI JSON in markdown blokken (```json ... ```). Even opschonen:
+    return content.replace(/```json|```/g, "").trim();
 
   } catch (err: unknown) {
-    const message = err instanceof Error ? err.message : "Unknown error";
-    console.error("analyzeWithGrok failed:", message);
-    throw err;
+    const message = err instanceof Error ? err.message : "Onbekende fout";
+    console.error("Analyse mislukt:", message);
+    throw new Error(message);
   }
 }
