@@ -6,7 +6,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const apiKey = process.env.VITE_XAI_API_KEY || process.env.VITE_GROK_API_KEY;
+    const apiKey = process.env.VITE_XAI_API_KEY;
     if (!apiKey) {
       return res.status(400).json({ error: 'Missing API key' });
     }
@@ -23,14 +23,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       body: JSON.stringify(req.body),
     });
 
-    if (!upstream.ok) {
-      const text = await upstream.text();
-      console.error('Upstream API Error:', text);
-      return res.status(upstream.status).send(text);
-    }
+    const text = await upstream.text();
 
-    const data = await upstream.json();
-    res.status(upstream.status).json(data);
+    try {
+      const data = JSON.parse(text);
+      res.status(upstream.status).json(data);
+    } catch {
+      console.error('Upstream response is not valid JSON:', text);
+      res.status(upstream.status).json({
+        error: 'Invalid JSON response from upstream API',
+        raw: text,
+      });
+    }
 
   } catch (err: unknown) {
     const message = err instanceof Error ? err.message : 'Unknown error';
