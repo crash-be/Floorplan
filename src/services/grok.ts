@@ -1,20 +1,20 @@
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
-  // Frontend hoeft geen API key te kennen
-  const response = await fetch("/api/xai", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      model: "grok-2-vision-1212", // vision model
-      version: 2, 
-      messages: [
-        {
-          role: "user",
-          content: [
-            {
-              type: "text",
-              text: `SYSTEM PROMPT — Advanced Geometric Area Analysis (Chain-of-Thought)
+  try {
+    // Frontend hoeft geen API key te kennen
+    const response = await fetch("/api/xai", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: "grok-2-vision-1212", // vision model
+        messages: [
+          {
+            role: "user",
+            content: [
+              {
+                type: "text",
+                text: `SYSTEM PROMPT — Advanced Geometric Area Analysis (Chain-of-Thought)
 You are an expert in Computational Geometry and Topology.
 Your goal is to parse an image of a floor plan, reconstruct its geometry, and calculate the EXACT area.
 
@@ -93,24 +93,49 @@ MANDATORY OUTPUT STRUCTURE (STRICT JSON ONLY)
   "roomCount": 1,
   "summary": "Start DIREKT met de uitleg in het NEDERLANDS. Stap 1: Gevonden maten... Stap 2: Strategie... Stap 3: Berekening..."
 }`
-            },
-            {
-              type: "image_url",
-              image_url: { url: base64Image }
-            }
-          ]
-        }
-      ],
-      stream: false
-    })
-  });
+              },
+              {
+                type: "image_url",
+                image_url: { url: base64Image }
+              }
+            ]
+          }
+        ],
+        stream: false
+      })
+    });
 
-  if (!response.ok) {
     const text = await response.text();
-    console.error("Serverless Function Error:", text);
-    throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${text}`);
-  }
 
-  const data = await response.json();
-  return data.choices[0].message.content;
+    if (!response.ok) {
+      console.error("Serverless Function Error:", text);
+      throw new Error(`Serverless Function Error: ${response.status} ${response.statusText} - ${text}`);
+    }
+
+    if (!text) {
+      console.warn("Empty response from API");
+      throw new Error("Empty response from API");
+    }
+
+    let data;
+    try {
+      data = JSON.parse(text);
+    } catch (err) {
+      console.error("Failed to parse JSON from API:", text);
+      throw new Error("Invalid JSON received from API");
+    }
+
+    // Controleer dat de structuur aanwezig is
+    if (!data.choices || !data.choices[0]?.message?.content) {
+      console.error("Unexpected API response structure:", data);
+      throw new Error("Unexpected API response structure");
+    }
+
+    return data.choices[0].message.content;
+
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Unknown error";
+    console.error("analyzeWithGrok failed:", message);
+    throw err;
+  }
 }
