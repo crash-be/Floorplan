@@ -1,20 +1,14 @@
-const API_KEY = import.meta.env.VITE_XAI_API_KEY || import.meta.env.VITE_GROK_API_KEY;
-
+// grok.ts
 export async function analyzeWithGrok(base64Image: string): Promise<string> {
-    if (!API_KEY) {
-        throw new Error("Grok (xAI) API Key not found. Please set VITE_XAI_API_KEY in .env");
-    }
-
-    // Using Vite proxy /api/xai -> https://api.x.ai/v1/chat/completions (via proxy rewrite or Vercel function)
+    // Frontend hoeft geen API key te kennen
+    // De key wordt gebruikt in de serverless function /api/xai
     const response = await fetch("/api/xai", {
         method: "POST",
         headers: {
             "Content-Type": "application/json",
-            "Authorization": `Bearer ${API_KEY}`
         },
-
         body: JSON.stringify({
-            model: "grok-2-vision-1212", // Latest stable vision model
+            model: "grok-2-vision-1212", // Laatste stabiele vision model
             messages: [
                 {
                     role: "user",
